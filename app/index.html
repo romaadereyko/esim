@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>eSIM QR PRO</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <div class="overlay"></div>
+
+  <div class="wrap">
+    <div class="shell">
+      <!-- Шапка -->
+      <div class="topbar">
+        <div class="brand">
+          <span class="g">eSIM</span> <span class="w">QR PRO</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+          <div class="nav" id="navTabs">
+            <span class="active" data-tab="scan" data-i18n="navScanner">Сканер</span>
+            <span data-tab="history" data-i18n="navHistory">История</span>
+          </div>
+          <div class="lang-switch">
+            <button id="langRu" class="active" data-lang="ru">RU</button>
+            <button id="langEn" data-lang="en">EN</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- Вкладка Сканер -->
+        <div id="tabScan" class="tab-content active">
+          <section class="hero">
+            <div class="panel left">
+              <div>
+                <h1><span data-i18n="title1">eSIM QR СКАНЕР</span> <span class="accent" data-i18n="title2">PRO</span></h1>
+                <div class="sub" data-i18n="sub">Сканируй и декодируй eSIM QR-коды локально в браузере. Без отправки данных на сервер.</div>
+                <div class="status"><span class="dot"></span><span id="statusText" data-i18n="statusReady">Готов к сканированию</span></div>
+                <div class="featurebar">
+                  <div class="feature"><div class="ico">▣</div><div class="txt"><b data-i18n="f1b">Multi QR</b><span data-i18n="f1t">Поддержка</span></div></div>
+                  <div class="feature"><div class="ico">🛡</div><div class="txt"><b data-i18n="f2b">100%</b><span data-i18n="f2t">Приватно</span></div></div>
+                  <div class="feature"><div class="ico">⚡</div><div class="txt"><b data-i18n="f3b">Мгновенно</b><span data-i18n="f3t">Декодирование</span></div></div>
+                  <div class="feature"><div class="ico">🔒</div><div class="txt"><b data-i18n="f4b">Без отправки</b><span data-i18n="f4t">Данных</span></div></div>
+                </div>
+              </div>
+              <div class="small" style="margin-top:16px;">
+                <span data-i18n="supported">Поддерживается стандартный формат eSIM:</span>
+                <code id="exampleFormat">LPA:1$SM-DP+$АКТИВАЦИЯ$ПОДТВЕРЖДЕНИЕ</code>
+              </div>
+            </div>
+
+            <div class="panel right">
+              <div id="scanBox" class="scanbox">
+                <div id="cameraWrap" class="camera-wrap">
+                  <video id="video" playsinline muted></video>
+                  <div class="camera-hud"><span class="live"></span> <span data-i18n="cameraLive">камера активна</span></div>
+                  <div class="camera-actions">
+                    <button id="stopCameraBtn" class="mini" type="button" data-i18n="stopCamera">Остановить</button>
+                  </div>
+                </div>
+
+                <div class="scan-inner" id="scanInner">
+                  <div class="upload-ui">
+                    <div class="cloud">☁</div>
+                    <div class="scan-title" data-i18n="dropTitle">Перетащите изображение сюда</div>
+                    <div class="scan-sub" data-i18n="dropSub">или нажмите, чтобы выбрать файл</div>
+                    <div class="actions">
+                      <label class="btn" for="fileInput" data-i18n="chooseFile">Выбрать файл</label>
+                    </div>
+                    <div class="orline" data-i18n="or">или</div>
+                    <button id="startCameraBtn" class="btn ghost" type="button" data-i18n="scanCamera">Сканировать камерой</button>
+                    <input id="fileInput" class="upload-input" type="file" accept="image/*" />
+                    <div id="httpsNotice" class="https-notice" data-i18n="httpsNotice">⚠️ Для работы камеры на телефоне откройте страницу по HTTPS или используйте локальный сервер.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="results">
+            <div class="result-card">
+              <div class="section-head">
+                <div class="section-title" data-i18n="decodedTitle">Результаты декодирования</div>
+                <div class="count" id="resultCount" data-i18n="resultCount">0 результатов</div>
+              </div>
+              <div class="eprofile">
+                <div class="chip">◈</div>
+                <div>
+                  <div class="profile-title"><span data-i18n="esimProfile">eSIM профиль</span><span class="pill" id="typePill">—</span></div>
+                  <div class="desc" id="descText" data-i18n="noData">Нет данных QR</div>
+                  <div class="rows">
+                    <div class="row"><div class="label" data-i18n="smdpLabel">Адрес SM-DP+</div><div class="value" id="smdpValue">—</div></div>
+                    <div class="row"><div class="label" data-i18n="activationLabel">Код активации</div><div class="value" id="activationValue">—</div></div>
+                    <div class="row"><div class="label" data-i18n="confirmationLabel">Код подтверждения</div><div class="value" id="confirmationValue">—</div></div>
+                  </div>
+                  <div class="raw" id="fullValue">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="side-stack">
+              <div class="result-card">
+                <div class="section-head"><div class="section-title" data-i18n="rawTitle">Сырые данные</div><div class="count" data-i18n="local">локально</div></div>
+                <textarea id="rawValue" class="raw" rows="3" style="resize:vertical;">—</textarea>
+                <div id="qrContainer" style="display:none; margin-top:14px; text-align:center;"></div>
+                <div class="copyrow">
+                  <button id="copyBtn" class="btn-small primary" data-i18n="copyLpa">Копировать LPA строку</button>
+                  <button id="downloadBtn" class="btn-small" data-i18n="downloadTxt">Скачать .TXT</button>
+                  <button id="saveHistoryBtn" class="btn-small" data-i18n="saveHistory">Сохранить в историю</button>
+                  <button id="generateQrBtn" class="btn-small" data-i18n="generateQr">Сгенерировать QR</button>
+                  <button id="showQrBtn" class="btn-small" data-i18n="showQr">Показать QR</button>
+                  <button id="clearBtn" class="btn-small" data-i18n="clear">Очистить</button>
+                </div>
+              </div>
+
+              <div class="result-card">
+                <div class="section-head"><div class="section-title" data-i18n="notesTitle">Заметки</div><div class="count" data-i18n="privacy">приватность</div></div>
+                <div class="small" data-i18n="notesText">
+                  Вся обработка выполняется в браузере. Камера работает только на <code>localhost</code> или по <code>https</code>.
+                  Если QR не eSIM-формата, вы всё равно увидите сырые данные.
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Вкладка История -->
+        <div id="tabHistory" class="tab-content">
+          <div class="panel" style="padding:22px;">
+            <div class="section-head">
+              <div class="section-title" data-i18n="historyTitle">История сканирований</div>
+              <div class="count" id="historyCount">0 записей</div>
+            </div>
+            <div class="history-controls">
+              <input type="text" id="historySearch" placeholder="Поиск по QR или комментарию..." data-i18n-placeholder="historySearch" />
+              <button id="exportHistoryBtn" class="btn-small primary" data-i18n="exportHistory">Экспорт JSON</button>
+              <button id="importHistoryBtn" class="btn-small" data-i18n="importHistory">Импорт JSON</button>
+              <input type="file" id="importFileInput" accept=".json" style="display:none;" />
+              <button id="clearHistoryBtn" class="btn-small danger" data-i18n="clearHistory">Очистить всё</button>
+            </div>
+            <div id="historyList" class="history-list">
+              <div class="history-empty" data-i18n="historyEmpty">История пуста. Сканируйте QR-коды и сохраняйте их сюда.</div>
+            </div>
+            <div id="historyQrContainer" style="display:none; margin-top:16px; text-align:center;"></div>
+          </div>
+        </div>
+
+        <footer>
+          <div>© 2026 eSIM QR PRO</div>
+          <div data-i18n="footerLocal">Вся обработка локальна. Ваши данные никогда не покидают устройство.</div>
+          <div data-i18n="footerLove">Сделано с ♥ для приватности</div>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/jsQR.min.js"></script>
+  <script src="/js/html5-qrcode.min.js"></script>
+  <script src="/js/qrcode.min.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
