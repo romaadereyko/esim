@@ -1,5 +1,5 @@
 services:
-  esim:
+  esim-esim:
     image: "nginx:alpine"
     container_name: "esim"
     ports:
@@ -9,11 +9,11 @@ services:
       - "./conf.d:/etc/nginx/conf.d"
       - "./app:/app"
     depends_on:
-      - "api"
+      - "esim-api"
     networks:
       - "esim"
 
-  api:
+  esim-api:
     build:
       context: ./api
       dockerfile: Dockerfile
